@@ -1,4 +1,5 @@
-import React, { Component } from "react";
+import { useState, useEffect, useContext } from "react";
+
 import "./Game.css";
 import Player from "../Player/Player";
 import RollDice from "../RollDice/RollDice";
@@ -6,143 +7,136 @@ import HoldButton from "../Buttons/HoldButton";
 import RestartButton from "../Buttons/RestartButton";
 import ScoreGoalInput from "../ScoreGoalInput/ScoreGoalInput";
 
-class Game extends Component {
-  state = {
-    totalScore1: 0,
-    totalScore2: 0,
-    scoreGoal: 100,
-    currentDiceRollSum: 0,
-    playerTurn: [true, false],
-    winner: [false, false],
-    isGameOn: false,
-    freezeGame: false,
-  };
+function Game() {
+  const [totalScore1, setTotalScore1] = useState(0);
+  const [totalScore2, setTotalScore2] = useState(0);
+  const [scoreGoal, setScoreGoal] = useState(100);
+  const [currentDiceRollSum, setCurrentDiceRollSum] = useState(0);
+  const [playerTurn, setPlayerTurn] = useState([true, false]);
+  const [winner, setWinner] = useState([false, false]);
+  const [isGameOn, setIsGameOn] = useState(false);
+  const [freezeGame, setFreezeGame] = useState(false);
 
-  updateCurrentDiceRollSum = (newSum) => {
+  useEffect(() => {
+    checkWinner();
+  }, [totalScore1, totalScore2]);
+
+  const updateCurrentDiceRollSum = (newSum) => {
     if (newSum === 12) {
-      this.handleDoubleSix();
+      handleDoubleSix();
     } else {
-      this.setState((prev) => {
-        return {
-          currentDiceRollSum:
-            newSum === 0 ? 0 : prev.currentDiceRollSum + newSum,
-        };
+      setCurrentDiceRollSum((prevSum) => {
+        return newSum === 0 ? 0 : prevSum + newSum;
       });
     }
   };
 
-  updateTotalScore = () => {
-    this.setState(
-      (prev) => {
-        return this.state.playerTurn[0]
-          ? { totalScore1: prev.totalScore1 + prev.currentDiceRollSum }
-          : { totalScore2: prev.totalScore2 + prev.currentDiceRollSum };
-      },
-      () => this.checkWinner()
-    );
+  const updateTotalScore = () => {
+    if (playerTurn[0]) {
+      setTotalScore1((prevTotal1) => prevTotal1 + currentDiceRollSum);
+    } else {
+      setTotalScore2((prevTotal2) => prevTotal2 + currentDiceRollSum);
+    }
+    // checkWinner();
   };
 
-  changeTurn = () => {
-    this.setState((prev) => {
-      return { playerTurn: [!prev.playerTurn[0], !prev.playerTurn[1]] };
+  const changeTurn = () => {
+    setPlayerTurn((prev) => {
+      return [!prev[0], !prev[1]];
     });
   };
 
-  updateScoreGoal = (newScoreGoal) => {
-    this.setState({ scoreGoal: newScoreGoal });
+  const updateScoreGoal = (newScoreGoal) => {
+    setScoreGoal(newScoreGoal);
   };
 
-  handleDoubleSix = () => {
-    // add a set timeout with animation
-    this.updateCurrentDiceRollSum(0);
-    this.changeTurn();
+  const handleDoubleSix = () => {
+    updateCurrentDiceRollSum(0);
+    changeTurn();
   };
 
-  gameOver = () => {
-    this.setState({ freezeGame: true });
+  const gameOver = () => {
+    setFreezeGame(true);
   };
 
-  checkWinner = () => {
-    if (this.state.totalScore1 === this.state.scoreGoal) {
-      this.setState({ winner: [true, false], playerTurn: [true, false] });
-      this.gameOver();
-    } else if (this.state.totalScore2 === this.state.scoreGoal) {
-      this.setState({ winner: [false, true], playerTurn: [false, true] });
-      this.gameOver();
-    } else if (this.state.totalScore1 > this.state.scoreGoal) {
-      this.setState({ winner: [false, true] });
-      this.gameOver();
-    } else if (this.state.totalScore2 > this.state.scoreGoal) {
-      this.setState({ winner: [true, false] });
-      this.gameOver();
+  const checkWinner = () => {
+    if (totalScore1 === scoreGoal) {
+      setWinner([true, false]);
+      setPlayerTurn([true, false]);
+      gameOver();
+    } else if (totalScore2 === scoreGoal) {
+      setWinner([false, true]);
+      setPlayerTurn([false, true]);
+      gameOver();
+    } else if (totalScore1 > scoreGoal) {
+      setWinner([false, true]);
+      gameOver();
+    } else if (totalScore2 > scoreGoal) {
+      setWinner([true, false]);
+      gameOver();
     } else {
       return;
     }
   };
 
-  restart = () => {
-    this.setState((prev) => {
-      return {
-        totalScore1: 0,
-        totalScore2: 0,
-        scoreGoal: prev.scoreGoal,
-        currentDiceRollSum: 0,
-        playerTurn: [true, false],
-        winner: [false, false],
-        isGameOn: false,
-        freezeGame: false,
-      };
-    });
+  const restart = () => {
+    setTotalScore1(0);
+    setTotalScore2(0);
+    setScoreGoal((prev) => prev);
+    setCurrentDiceRollSum(0);
+    setPlayerTurn([true, false]);
+    setWinner([false, false]);
+    setIsGameOn(false);
+    setFreezeGame(false);
   };
 
-  changeGameMode = () => {
-    this.setState({ isGameOn: true, freezeGame: true });
+  const changeGameMode = () => {
+    setIsGameOn(true);
+    setFreezeGame(true);
     setTimeout(() => {
-      this.setState({ freezeGame: false });
+      setFreezeGame(false);
     }, 1000);
   };
 
-  render() {
-    return (
-      <div className="game-container">
-        <Player
-          name="PLAYER 1"
-          totalScore={this.state.totalScore1}
-          currentScore={this.state.currentDiceRollSum}
-          isMyTurn={this.state.playerTurn[0]}
-          isWinner={this.state.winner[0]}
+  return (
+    <div className="game-container">
+      <Player
+        name="PLAYER 1"
+        totalScore={totalScore1}
+        currentScore={currentDiceRollSum}
+        isMyTurn={playerTurn[0]}
+        isWinner={winner[0]}
+      />
+      <div className="game-dashboard">
+        <RestartButton restart={restart} />
+        <RollDice
+          updateCurrentSum={updateCurrentDiceRollSum}
+          changeGameMode={changeGameMode}
+          isGameOn={isGameOn}
+          isDisabled={freezeGame}
         />
-        <div className="game-dashboard">
-          <RestartButton restart={this.restart} />
-          <RollDice
-            updateCurrentSum={this.updateCurrentDiceRollSum}
-            changeGameMode={this.changeGameMode}
-            isGameOn={this.state.isGameOn}
-            isDisabled={this.state.freezeGame}
-          />
-          <HoldButton
-            updateCurrentSum={this.updateCurrentDiceRollSum}
-            updateTotalScore={this.updateTotalScore}
-            changeTurn={this.changeTurn}
-            isGameOn={this.state.isGameOn}
-            isDisabled={this.state.freezeGame}
-          />
-          <ScoreGoalInput
-            onInputChange={this.updateScoreGoal}
-            value={this.state.scoreGoal}
-            isGameOn={this.state.isGameOn}
-          />
-        </div>
-        <Player
-          name="PLAYER 2"
-          totalScore={this.state.totalScore2}
-          currentScore={this.state.currentDiceRollSum}
-          isMyTurn={this.state.playerTurn[1]}
-          isWinner={this.state.winner[1]}
+        <HoldButton
+          updateCurrentSum={updateCurrentDiceRollSum}
+          updateTotalScore={updateTotalScore}
+          changeTurn={changeTurn}
+          isGameOn={isGameOn}
+          isDisabled={freezeGame}
+        />
+        <ScoreGoalInput
+          onInputChange={updateScoreGoal}
+          value={scoreGoal}
+          isGameOn={isGameOn}
         />
       </div>
-    );
-  }
+      <Player
+        name="PLAYER 2"
+        totalScore={totalScore2}
+        currentScore={currentDiceRollSum}
+        isMyTurn={playerTurn[1]}
+        isWinner={winner[1]}
+      />
+    </div>
+  );
 }
 
 export default Game;

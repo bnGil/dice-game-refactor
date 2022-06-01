@@ -1,24 +1,27 @@
-import React, { Component } from "react";
 import "./Buttons.css";
 
-class HoldButton extends Component {
-  fireFunctionsOnClick = () => {
-    this.props.updateTotalScore();
-    this.props.updateCurrentSum(0);
-    this.props.changeTurn();
+function HoldButton({
+  updateTotalScore,
+  updateCurrentSum,
+  changeTurn,
+  isGameOn,
+  isDisabled,
+}) {
+  const fireFunctionsOnClick = () => {
+    updateTotalScore();
+    updateCurrentSum(0);
+    changeTurn();
   };
 
-  render() {
-    return (
-      <button
-        onClick={this.fireFunctionsOnClick}
-        className={`${this.props.isGameOn ? "visible" : "invisible"}`}
-        disabled={this.props.isDisabled}
-      >
-        <i className="fa-solid fa-download fa-2x"></i> HOLD
-      </button>
-    );
-  }
+  return (
+    <button
+      onClick={fireFunctionsOnClick}
+      className={`${isGameOn ? "visible" : "invisible"}`}
+      disabled={isDisabled}
+    >
+      <i className="fa-solid fa-download fa-2x"></i> HOLD
+    </button>
+  );
 }
 
 export default HoldButton;

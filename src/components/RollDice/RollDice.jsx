@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { useState } from "react";
 import "./RollDice.css";
 import dice_1 from "../../assets/images/dice-1.png";
 import dice_2 from "../../assets/images/dice-2.png";
@@ -9,54 +9,50 @@ import dice_6 from "../../assets/images/dice-6.png";
 
 const images = [dice_1, dice_2, dice_3, dice_4, dice_5, dice_6];
 
-class RollDice extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { die1: 1, die2: 1, isRolling: false };
-  }
-  roll = () => {
-    this.setState({
-      die1: Math.floor(Math.random() * 6 + 1),
-      die2: Math.floor(Math.random() * 6 + 1),
-      isRolling: true,
-    });
+function RollDice({ updateCurrentSum, changeGameMode, isGameOn, isDisabled }) {
+  const [die1, setDie1] = useState(1);
+  const [die2, setDie2] = useState(1);
+  const [isRolling, setIsRolling] = useState(false);
+
+  const roll = () => {
+    const dice = [
+      Math.floor(Math.random() * 6 + 1),
+      Math.floor(Math.random() * 6 + 1),
+    ];
+    setDie1(dice[0]);
+    setDie2(dice[1]);
+    setIsRolling(true);
 
     setTimeout(() => {
-      this.setState({ isRolling: false });
-      this.props.updateCurrentSum(this.state.die1 + this.state.die2);
+      setIsRolling(false);
+      updateCurrentSum(dice[0] + dice[1]);
     }, 1000);
   };
 
-  functionsToFire = () => {
-    this.roll();
-    this.props.changeGameMode();
+  const functionsToFire = () => {
+    roll();
+    changeGameMode();
   };
 
-  render() {
-    return (
-      <div className="rolldice-container">
-        <div
-          className={`dice-container ${
-            this.props.isGameOn ? "visible" : "invisible"
-          }`}
-        >
-          <img
-            src={images[this.state.die1 - 1]}
-            alt="dice-1"
-            className={`dice ${this.state.isRolling ? "animation" : ""}`}
-          />
-          <img
-            src={images[this.state.die2 - 1]}
-            alt="dice-1"
-            className={`dice ${this.state.isRolling ? "animation" : ""}`}
-          />
-        </div>
-        <button onClick={this.functionsToFire} disabled={this.props.isDisabled}>
-          <i className="fa-solid fa-dice fa-2x"></i> ROLL DICE
-        </button>
+  return (
+    <div className="rolldice-container">
+      <div className={`dice-container ${isGameOn ? "visible" : "invisible"}`}>
+        <img
+          src={images[die1 - 1]}
+          alt="dice-1"
+          className={`dice ${isRolling ? "animation" : ""}`}
+        />
+        <img
+          src={images[die2 - 1]}
+          alt="dice-1"
+          className={`dice ${isRolling ? "animation" : ""}`}
+        />
       </div>
-    );
-  }
+      <button onClick={functionsToFire} disabled={isDisabled}>
+        <i className="fa-solid fa-dice fa-2x"></i> ROLL DICE
+      </button>
+    </div>
+  );
 }
 
 export default RollDice;
